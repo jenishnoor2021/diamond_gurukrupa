@@ -189,13 +189,16 @@ class AdminProcessController extends Controller
                     $request['price'] = 0;
                     Process::where(['dimonds_barcode' => $process->dimonds_barcode, 'worker_name' => $process->worker_name])->update(['ratecut' => 1]);
                 } elseif ($countprocess == 0) {
-                    $request['price'] = $weight * ($get_rate);
+                    // $request['price'] = $weight * ($get_rate);
+                    $request['price'] = $get_rate;
                 } else {
                     if ($processid->id == $request->id) {
-                        $request['price'] = $weight * ($get_rate);
+                        // $request['price'] = $weight * ($get_rate);
+                        $request['price'] = $get_rate;
                     } else {
                         if (!empty($previousdata) && $previousdata->price == 0 && $previousdata->ratecut == 1) {
-                            $request['price'] = $i_weight * ($get_rate);
+                            // $request['price'] = $i_weight * ($get_rate);
+                            $request['price'] = $get_rate;
                         } else {
                             $request['price'] = 0;
                         }
@@ -391,7 +394,7 @@ class AdminProcessController extends Controller
         // $daily->delete();
         return Redirect::back()->with('success', "Deleted Record Successfully");
     }
-    
+
     public function bulkIssue(Request $request)
     {
         $designations = Designation::get();
