@@ -139,6 +139,10 @@ Route::group(['middleware' => ['auth', 'usersession']], function () {
     Route::post('admin/process/update', [AdminProcessController::class, 'update'])->name('admin.process.update');
     Route::get('admin/process/destroy/{id}', [AdminProcessController::class, 'destroy'])->name('admin.process.destroy');
 
+    // Diamond Range Report Routes
+    Route::get('admin/diamond-range-report', [AdminProcessController::class, 'diamondRangeReport'])->name('admin.diamond-range.report');
+    Route::post('admin/diamond-range-report/export', [AdminProcessController::class, 'exportDiamondRangeReport'])->name('admin.diamond-range.export');
+
     Route::post('admin/get-workers', [AdminDimondController::class, 'getWorkersByDesignation'])->name('admin.process.getworker');
     Route::post('admin/get-designation', [AdminDimondController::class, 'getDesignationByCategory'])->name('admin.process.getdesignation');
 

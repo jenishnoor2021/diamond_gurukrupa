@@ -92,6 +92,7 @@
                     <li><a href="/admin/summary" key="t-full-calendar">Summary</a></li>
                     <li><a href="/admin/worker_summary" key="t-full-calendar">Worker Summary</a></li>
                     <li><a href="/admin/dimond_list" key="t-full-calendar">ADD Dimond list</a></li>
+                    <li><a href="/admin/diamond-range-report" key="t-tui-calendar">Diamond Range Report</a></li>
                 </ul>
             </li>
 

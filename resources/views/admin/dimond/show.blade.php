@@ -96,7 +96,7 @@
                                         <tbody>
                                             <tr>
                                                 <td class="text-warning">Party Name :</td>
-                                                <td>{{ $barcodeDetail->parties->party_code }}</td>
+                                                <td>{{ $barcodeDetail->parties?->party_code ?? 'N/A' }}</td>
                                             </tr>
                                             <tr>
                                                 <td class="text-warning">Dimond Name :</td>
@@ -646,7 +646,7 @@
         $('#designatio' + id).change(function() {
             var designation = $(this).val();
             $('#worker_nam' + id).empty();
-                        
+
             if (designation) {
                 $.ajax({
                     type: 'POST',

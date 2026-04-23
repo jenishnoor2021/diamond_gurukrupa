@@ -177,12 +177,23 @@ class AdminDimondController extends Controller
     public function show($barcode)
     {
         $designations = Designation::get();
-        $processes = Process::where('dimonds_barcode', $barcode)->get();
-        $barcodeDetail = Dimond::where('barcode_number', $barcode)->first();
-        $procee_return = Process::where('dimonds_barcode', $barcode)->where('return_weight', null)->first();
-        $final_result = Process::where('dimonds_barcode', $barcode)->where('designation', 'Grading')->latest()
+
+        // Try to find diamond by ID first, then by barcode
+        $barcodeDetail = Dimond::where('id', $barcode)
+            ->orWhere('barcode_number', $barcode)
             ->first();
-        $lastweight = Process::where('dimonds_barcode', $barcode)->orderBy('id', 'DESC')->first();
+
+        if (!$barcodeDetail) {
+            return redirect('admin/dimond')->withErrors(['error' => 'Diamond not found']);
+        }
+
+        $barcode_number = $barcodeDetail->barcode_number;
+        $processes = Process::where('dimonds_barcode', $barcode_number)->get();
+        $procee_return = Process::where('dimonds_barcode', $barcode_number)->where('return_weight', null)->first();
+        $final_result = Process::where('dimonds_barcode', $barcode_number)->where('designation', 'Grading')->latest()
+            ->first();
+        $lastweight = Process::where('dimonds_barcode', $barcode_number)->orderBy('id', 'DESC')->first();
+
         return view('admin.dimond.show', compact('designations', 'barcodeDetail', 'processes', 'procee_return', 'final_result', 'lastweight'));
     }
 

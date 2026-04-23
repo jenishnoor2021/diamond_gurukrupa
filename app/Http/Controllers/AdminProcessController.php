@@ -12,10 +12,12 @@ use App\Models\Partyrange;
 use App\Models\WorkerRate;
 use App\Models\Designation;
 use App\Models\Workerrange;
+use App\Exports\DiamondRangeExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Redirect;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AdminProcessController extends Controller
 {
@@ -686,5 +688,105 @@ class AdminProcessController extends Controller
             DB::rollBack();
             return redirect()->back()->with('error', 'Error while returning diamonds: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Diamond Range Report
+     * Show diamonds filtered by designation, worker, date range, and weight range
+     */
+    public function diamondRangeReport(Request $request)
+    {
+        $designations = Designation::get();
+        $workers = Worker::where('is_active', 1)->get();
+
+        $diamonds = [];
+
+        if ($request->filled('designation') && $request->filled('start_date') && $request->filled('end_date')) {
+            $designation = $request->input('designation');
+            $worker_name = $request->input('worker_name');
+            $startDate = $request->input('start_date');
+            $endDate = $request->input('end_date');
+            $minRange = $request->input('min_range');
+            $maxRange = $request->input('max_range');
+
+            // Get all process records for selected designation and date range
+            $query = Process::where('designation', $designation)
+                ->whereDate('issue_date', '>=', $startDate)
+                ->whereDate('issue_date', '<=', $endDate);
+
+            // Filter by worker if selected and not "all"
+            if ($worker_name && $worker_name != '' && $worker_name != 'all') {
+                $query->where('worker_name', $worker_name);
+            }
+
+            $processRecords = $query->get();
+
+            // Get diamond IDs from process records
+            $diamondIds = $processRecords->pluck('dimonds_id')->unique()->toArray();
+
+            // Get diamonds with their weights
+            $diamondsQuery = Dimond::whereIn('id', $diamondIds);
+
+            // Filter by weight range if provided
+            if ($minRange !== '' && $minRange !== null) {
+                $diamondsQuery->where('weight', '>=', $minRange);
+            }
+            if ($maxRange !== '' && $maxRange !== null) {
+                $diamondsQuery->where('weight', '<=', $maxRange);
+            }
+
+            // Order by weight ascending
+            $diamonds = $diamondsQuery->orderBy('weight', 'asc')->get();
+        }
+
+        return view('admin.reports.diamond_range_report', compact('designations', 'workers', 'diamonds'));
+    }
+
+    /**
+     * Export Diamond Range Report
+     * Export filtered diamonds to Excel
+     */
+    public function exportDiamondRangeReport(Request $request)
+    {
+        $designation = $request->input('designation');
+        $worker_name = $request->input('worker_name');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+        $minRange = $request->input('min_range');
+        $maxRange = $request->input('max_range');
+
+        // Get all process records for selected designation and date range
+        $query = Process::where('designation', $designation)
+            ->whereDate('issue_date', '>=', $startDate)
+            ->whereDate('issue_date', '<=', $endDate);
+
+        // Filter by worker if selected and not "all"
+        if ($worker_name && $worker_name != '' && $worker_name != 'all') {
+            $query->where('worker_name', $worker_name);
+        }
+
+        $processRecords = $query->get();
+
+        // Get diamond IDs from process records
+        $diamondIds = $processRecords->pluck('dimonds_id')->unique()->toArray();
+
+        // Get diamonds with their weights
+        $diamondsQuery = Dimond::whereIn('id', $diamondIds);
+
+        // Filter by weight range if provided
+        if ($minRange !== '' && $minRange !== null) {
+            $diamondsQuery->where('weight', '>=', $minRange);
+        }
+        if ($maxRange !== '' && $maxRange !== null) {
+            $diamondsQuery->where('weight', '<=', $maxRange);
+        }
+
+        // Order by weight ascending
+        $diamonds = $diamondsQuery->orderBy('weight', 'asc')->get();
+
+        // Generate filename with timestamp
+        $fileName = 'Diamond_Range_Report_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+
+        return Excel::download(new DiamondRangeExport($diamonds), $fileName);
     }
 }
