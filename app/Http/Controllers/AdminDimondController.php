@@ -359,10 +359,11 @@ class AdminDimondController extends Controller
     {
         $deliveredDimonds = Dimond::where('status', 'Delivered')->orderBy('id', 'DESC')->get();
         $completedDimonds = Dimond::where('status', 'Completed')->orderBy('id', 'DESC')->get();
+        $todayCompletedDimonds = Dimond::where('status', 'Completed')->whereDate('updated_at', today())->orderBy('id', 'DESC')->get();
         $processingDimonds = Dimond::whereIn('status', ['Processing', 'OutterProcessing'])->orderBy('id', 'DESC')->get();
         $pendingDimonds = Dimond::where('status', 'Pending')->orderBy('id', 'DESC')->get();
         $repairDimonds = Repair::orderBy('id', 'DESC')->get();
-        return view('admin.dimond.hrdimond', compact('deliveredDimonds', 'completedDimonds', 'processingDimonds', 'pendingDimonds', 'repairDimonds'));
+        return view('admin.dimond.hrdimond', compact('deliveredDimonds', 'completedDimonds', 'todayCompletedDimonds', 'processingDimonds', 'pendingDimonds', 'repairDimonds'));
     }
 
     public function transfer(Request $request)

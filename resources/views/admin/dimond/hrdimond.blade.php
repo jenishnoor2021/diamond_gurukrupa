@@ -41,6 +41,9 @@ use App\Models\Dimond;
             <a class="nav-link active" data-bs-toggle="tab" href="#transactions-complete-tab" role="tab">Completed ({{count($completedDimonds)}})</a>
           </li>
           <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#transactions-today-complete-tab" role="tab">Today Completed ({{count($todayCompletedDimonds)}})</a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link" data-bs-toggle="tab" href="#transactions-processing-tab" role="tab">Processing ({{count($processingDimonds)}})</a>
           </li>
           <li class="nav-item">
@@ -74,7 +77,7 @@ use App\Models\Dimond;
                     $dimond = Dimond::where('id', $repairdimond->dimonds_id)->first();
                     ?>
                     <td>
-                      <a href="{{route('admin.dimond.show', $dimond->barcode_number)}}"><i class="fa fa-eye" style="color:white;font-size:15px;background-color:rgba(255, 255, 255, 0.25);padding:8px;"></i></a>
+                      <a href="{{ route('admin.dimond.show', $dimond->barcode_number) }}" class="btn btn-info"><i class="fa fa-eye"></i></a>
                     </td>
                     <td>{{$dimond->parties->party_code}}</td>
                     <td>{{$dimond->dimond_name}}</td>
@@ -154,6 +157,44 @@ use App\Models\Dimond;
                 </thead>
                 <tbody>
                   @foreach($completedDimonds as $dimond)
+                  <tr>
+                    <td><a href="/admin/print-slipe/{{$dimond->id}}" class="btn btn-primary" target="_blank">Print</a></td>
+                    <td>{{$dimond->parties->party_code}}</td>
+                    <td>{{$dimond->dimond_name}}</td>
+                    <td>{{$dimond->weight}}</td>
+                    <td>{!! $dimond->barcode_number !!}</td>
+                    <td>{{$dimond->shape}}</td>
+                    <td>{{$dimond->clarity}}</td>
+                    <td>{{$dimond->color}}</td>
+                    <td>{{$dimond->cut}}</td>
+                    <td>{{$dimond->polish}}</td>
+                    <td>{{$dimond->symmetry}}</td>
+                  </tr>
+                  @endforeach
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="tab-pane" id="transactions-today-complete-tab" role="tabpanel">
+            <div class="table-responsive" data-simplebar style="max-height: 330px;">
+              <table class="table align-middle table-nowrap">
+                <thead>
+                  <tr>
+                    <th>Slip</th>
+                    <th>Party Name</th>
+                    <th>Dimond Name</th>
+                    <th>Weight</th>
+                    <th>Barcode</th>
+                    <th>Shap</th>
+                    <th>clarity</th>
+                    <th>color</th>
+                    <th>cut</th>
+                    <th>polish</th>
+                    <th>symmetry</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @foreach($todayCompletedDimonds as $dimond)
                   <tr>
                     <td><a href="/admin/print-slipe/{{$dimond->id}}" class="btn btn-primary" target="_blank">Print</a></td>
                     <td>{{$dimond->parties->party_code}}</td>

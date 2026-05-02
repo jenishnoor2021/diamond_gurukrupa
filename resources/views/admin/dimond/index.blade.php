@@ -76,7 +76,8 @@ use App\Models\Process;
                     <thead>
                         <tr>
                             <th>Action</th>
-                            <th>PArty Name</th>
+                            <th>Party Name</th>
+                            <th>Janger No</th>
                             <th>Dimond Name</th>
                             <th>Row Weight</th>
                             <th>Polished Weight</th>
@@ -109,6 +110,7 @@ use App\Models\Process;
                                 <a href="{{ route('admin.dimond.destroy', $dimond->id) }}" onclick="return confirm('Sure ! You want to delete ?');" class="btn btn-outline-danger waves-effect waves-light"><i class="fa fa-trash"></i></a>
                             </td>
                             <td>{{ $dimond->parties->party_code }}</td>
+                            <td>{{ $dimond->janger_no }}</td>
                             <td>{{ $dimond->dimond_name }}</td>
                             <td>{{ $dimond->weight }}</td>
                             <td>{{ $dimond->required_weight }}</td>
