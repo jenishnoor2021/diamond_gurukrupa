@@ -36,6 +36,55 @@
     .accordion-item.active .accordion-arrow {
         transform: rotate(180deg);
     }
+
+    .kp-toggle-container {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        min-height: 56px;
+    }
+
+    .kp-switch {
+        position: relative;
+        width: 60px;
+        height: 34px;
+        border-radius: 999px;
+        background: #d7d7d7;
+        cursor: pointer;
+        transition: background 0.25s ease;
+        display: inline-block;
+    }
+
+    .kp-switch::after {
+        content: '';
+        position: absolute;
+        left: 4px;
+        top: 4px;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+        transition: transform 0.25s ease;
+    }
+
+    .kp-switch.active {
+        background: #2196f3;
+    }
+
+    .kp-switch.active::after {
+        transform: translateX(26px);
+    }
+
+    .kp-switch-text {
+        margin-left: 12px;
+        font-weight: 600;
+        color: #202124;
+    }
+
+    .kp-switch-text.active {
+        color: #2196f3;
+    }
 </style>
 @endsection
 @section('content')
@@ -189,7 +238,7 @@
                     </div>
                 </div>
 
-                <div class="row mt-3">
+                <div class="row mt-3 align-items-center">
                     <div class="col-md-8">
                         @if ($barcodeDetail->status != 'Completed' && $barcodeDetail->status != 'Delivered')
                         @if (!isset($procee_return))
@@ -201,8 +250,15 @@
                         @endif
                         @endif
                     </div>
+                    <div class="col-md-4">
+                        <div class="kp-toggle-container">
+                            <a href="{{ route('admin.dimond.togglekp', $barcodeDetail->id) }}" class="kp-switch {{ $barcodeDetail->is_kp ? 'active' : '' }}" title="Toggle KP status"></a>
+                            <span class="kp-switch-text {{ $barcodeDetail->is_kp ? 'active' : '' }}">
+                                {{ $barcodeDetail->is_kp ? 'KP ON' : 'KP OFF' }}
+                            </span>
+                        </div>
+                    </div>
                 </div>
-
 
                 <div class="box-body" id="create{{ 'section' . $barcodeDetail->id }}" style="display:none;">
 

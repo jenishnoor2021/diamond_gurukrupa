@@ -110,11 +110,13 @@ Route::group(['middleware' => ['auth', 'usersession']], function () {
     Route::patch('admin/worker_rate/update/{id}', [AdminWorkerRateController::class, 'update'])->name('admin.worker_rate.update');
 
     Route::get("admin/dimond", [AdminDimondController::class, 'index'])->name('admin.dimond.index');
+    Route::get("admin/dimond/kp-list", [AdminDimondController::class, 'kpList'])->name('admin.dimond.kplist');
     Route::get('admin/dimond/show/{id}', [AdminDimondController::class, 'show'])->name('admin.dimond.show');
     Route::get('admin/dimond/create', [AdminDimondController::class, 'create'])->name('admin.dimond.create');
     Route::post('admin/dimond/store', [AdminDimondController::class, 'store'])->name('admin.dimond.store');
     Route::get('admin/dimond/edit/{id}', [AdminDimondController::class, 'edit'])->name('admin.dimond.edit');
     Route::patch('admin/dimond/update/{id}', [AdminDimondController::class, 'update'])->name('admin.dimond.update');
+    Route::get('admin/dimond/toggle-kp/{id}', [AdminDimondController::class, 'toggleKp'])->name('admin.dimond.togglekp');
     Route::get('admin/dimond/destroy/{id}', [AdminDimondController::class, 'destroy'])->name('admin.dimond.destroy');
     // Route::post('admin/dimond/updatestatus', [AdminDimondController::class, 'updateStatus'])->name('admin.dimond.updatestatus');
 

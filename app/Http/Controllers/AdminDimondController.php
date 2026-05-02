@@ -36,8 +36,21 @@ class AdminDimondController extends Controller
      */
     public function index()
     {
-        $dimonds = Dimond::orderBy('id', 'DESC')->get();
+        // Show only diamonds that are NOT marked as KP
+        $dimonds = Dimond::where('is_kp', 0)->orderBy('id', 'DESC')->get();
         return view('admin.dimond.index', compact('dimonds'));
+    }
+
+    /**
+     * Display KP (Keep Private) diamonds list
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function kpList()
+    {
+        // Show only diamonds that are marked as KP
+        $dimonds = Dimond::where('is_kp', 1)->orderBy('id', 'DESC')->get();
+        return view('admin.dimond.kp-list', compact('dimonds'));
     }
 
     /**
@@ -542,5 +555,22 @@ class AdminDimondController extends Controller
 
         // return view('admin.dimond.diamond_flow_pdf', compact('data', 'company'));
         return view('admin.dimond.diamond_flow', compact('data', 'partyLists'));
+    }
+
+    /**
+     * Toggle KP status for a diamond
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function toggleKp($id)
+    {
+        $dimond = Dimond::findOrFail($id);
+        $dimond->is_kp = !$dimond->is_kp;
+        $dimond->save();
+
+        $status = $dimond->is_kp ? 'marked as KP' : 'unmarked from KP';
+
+        return redirect()->back()->with('success', 'Diamond ' . $status . ' successfully');
     }
 }

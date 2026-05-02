@@ -49,6 +49,13 @@
             </li>
 
             <li>
+                <a href="/admin/dimond/kp-list" class="waves-effect">
+                    <i class="bx bx-check-double"></i>
+                    <span key="t-chat">KP Diamond List</span>
+                </a>
+            </li>
+
+            <li>
                 <a href="/admin/bulk-issue" class="waves-effect">
                     <i class="bx bx-pulse"></i>
                     <span key="t-chat">Bulk Issue</span>
