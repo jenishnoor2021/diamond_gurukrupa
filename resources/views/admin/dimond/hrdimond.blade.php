@@ -41,7 +41,7 @@ use App\Models\Dimond;
             <a class="nav-link active" data-bs-toggle="tab" href="#transactions-complete-tab" role="tab">Completed ({{count($completedDimonds)}})</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="tab" href="#transactions-today-complete-tab" role="tab">Today Completed ({{count($todayCompletedDimonds)}})</a>
+            <a class="nav-link" data-bs-toggle="tab" href="#transactions-today-delivery-tab" role="tab">Today Delivered ({{count($todayDeliveryDimonds)}})</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" data-bs-toggle="tab" href="#transactions-processing-tab" role="tab">Processing ({{count($processingDimonds)}})</a>
@@ -194,7 +194,7 @@ use App\Models\Dimond;
                   </tr>
                 </thead>
                 <tbody>
-                  @foreach($todayCompletedDimonds as $dimond)
+                  @foreach($todayDeliveryDimonds as $dimond)
                   <tr>
                     <td><a href="/admin/print-slipe/{{$dimond->id}}" class="btn btn-primary" target="_blank">Print</a></td>
                     <td>{{$dimond->parties->party_code}}</td>

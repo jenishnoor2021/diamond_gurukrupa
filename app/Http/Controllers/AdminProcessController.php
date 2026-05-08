@@ -483,7 +483,7 @@ class AdminProcessController extends Controller
                 $issueWeight = $request->issue_weights[$diamondId] ?? null;
                 $barcode = $request->barcode_number[$diamondId] ?? null;
 
-                // 1️⃣ Create new process entry
+                // Create new process entry
                 Process::create([
                     'dimonds_id' => $diamondId,
                     'dimonds_barcode' => $barcode,
@@ -496,7 +496,7 @@ class AdminProcessController extends Controller
                     // 'status' => 'ISSUED',
                 ]);
 
-                // 2️⃣ Update diamond status
+                // Update diamond status
                 // Dimond::where('id', $diamondId)->update(['status' => 'ISSUED']);
             }
 
