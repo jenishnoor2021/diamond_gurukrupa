@@ -64,12 +64,22 @@ use App\Models\Process;
                                 </div>
                                 @endif
                             </h4>
-
-                            <div class="align-self-start mt-3 mt-sm-0 mb-2">
-                            </div>
                         </span>
-
                     </div>
+
+                    @if(request()->filled('designation') || request()->filled('party_id'))
+                    <div class="alert alert-info">
+                        Showing diamonds
+                        @if(request()->filled('designation'))
+                        with designation: <strong>{{ request('designation') }}</strong>
+                        @endif
+                        @if(request()->filled('party_id'))
+                        for party: <strong>{{ optional(App\Models\Party::find(request('party_id')))->fname ?? request('party_id') }}</strong>
+                        @endif
+                        <a href="{{ route('admin.dimond.index') }}" class="btn btn-sm btn-light ms-2">Clear filter</a>
+                    </div>
+                    @endif
+
                 </div>
 
                 <table id="datatable" class="table table-bordered dt-responsive nowrap w-100 mt-3">

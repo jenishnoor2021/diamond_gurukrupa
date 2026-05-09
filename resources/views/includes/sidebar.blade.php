@@ -43,7 +43,7 @@
 
             <li>
                 <a href="/admin/dimond" class="waves-effect">
-                    <i class="bx bx-user"></i>
+                    <i class="bx bx-diamond"></i>
                     <span key="t-chat">Diamond</span>
                 </a>
             </li>
@@ -52,6 +52,13 @@
                 <a href="/admin/dimond/kp-list" class="waves-effect">
                     <i class="bx bx-check-double"></i>
                     <span key="t-chat">KP Diamond List</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="/admin/alert-diamonds" class="waves-effect">
+                    <i class="bx bx-diamond"></i>
+                    <span key="t-chat">Alert Diamonds</span>
                 </a>
             </li>
 

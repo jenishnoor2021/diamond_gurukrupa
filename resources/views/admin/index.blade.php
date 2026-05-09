@@ -175,14 +175,27 @@ use Illuminate\Support\Facades\DB;
                             </tr>
                         </thead>
                         <tbody>
+                            <?php
+                            $totalDiscuss = 0;
+                            $totalHPHT = 0;
+                            $totalPending = 0;
+                            $totalOutter = 0;
+                            $totalProcessing = 0;
+                            $totalCompleted = 0;
+                            $totalDelivered = 0;
+                            $totalDiamonds = 0;
+                            ?>
                             @foreach ($partyes as $partyList)
                             <?php
                             $baseQuery = DB::table('processes')
                                 ->join('dimonds', 'processes.dimonds_id', '=', 'dimonds.id')
-                                ->where('dimonds.parties_id', $partyList->id)->where('processes.return_weight', '');
+                                ->where('dimonds.parties_id', $partyList->id)
+                                ->where(function ($query) {
+                                    $query->where('processes.return_weight', '')->orWhereNull('processes.return_weight');
+                                });
 
                             $discussCount = (clone $baseQuery)
-                                ->where('processes.designation', 'Discuss')
+                                ->where('processes.designation', 'discus')
                                 ->count();
 
                             $hphtCount = (clone $baseQuery)
@@ -195,11 +208,20 @@ use Illuminate\Support\Facades\DB;
                             $processingDimond = Dimond::where('parties_id', $partyList->id)->where('status', 'Processing')->count();
                             $completedDimond = Dimond::where(['parties_id' => $partyList->id, 'status' => 'Completed'])->count();
                             $deliveredDimond = Dimond::where(['parties_id' => $partyList->id, 'status' => 'Delivered'])->count();
+
+                            $totalDiscuss += $discussCount;
+                            $totalHPHT += $hphtCount;
+                            $totalPending += $pendingDimond;
+                            $totalOutter += $outterDimond;
+                            $totalProcessing += $processingDimond;
+                            $totalCompleted += $completedDimond;
+                            $totalDelivered += $deliveredDimond;
+                            $totalDiamonds += $totalDimond;
                             ?>
                             <tr>
                                 <td>{{ $partyList->fname }}&nbsp;{{ $partyList->lname }}</td>
-                                <td>{{ $discussCount }}</td>
-                                <td>{{ $hphtCount }}</td>
+                                <td><a href="{{ route('admin.dimond.index', ['designation' => 'discus', 'party_id' => $partyList->id]) }}">{{ $discussCount }}</a></td>
+                                <td><a href="{{ route('admin.dimond.index', ['designation' => 'HPHT', 'party_id' => $partyList->id]) }}">{{ $hphtCount }}</a></td>
                                 <td>{{ $pendingDimond }}</td>
                                 <td>{{ $outterDimond }}</td>
                                 <td>{{ $processingDimond }}</td>
@@ -209,6 +231,19 @@ use Illuminate\Support\Facades\DB;
                             </tr>
                             @endforeach
                         </tbody>
+                        <tfoot>
+                            <tr>
+                                <th>Total</th>
+                                <th>{{ $totalDiscuss }}</th>
+                                <th>{{ $totalHPHT }}</th>
+                                <th>{{ $totalPending }}</th>
+                                <th>{{ $totalOutter }}</th>
+                                <th>{{ $totalProcessing }}</th>
+                                <th>{{ $totalCompleted }}</th>
+                                <th>{{ $totalDelivered }}</th>
+                                <th>{{ $totalDiamonds }}</th>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>

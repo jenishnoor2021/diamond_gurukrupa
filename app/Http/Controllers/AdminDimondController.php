@@ -26,6 +26,8 @@ use Maatwebsite\Excel\HeadingRowImport;
 use Illuminate\Support\Facades\Redirect;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Illuminate\Support\Str;
+use App\Exports\AlertDiamondsExport;
 
 class AdminDimondController extends Controller
 {
@@ -34,11 +36,78 @@ class AdminDimondController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         // Show only diamonds that are NOT marked as KP
-        $dimonds = Dimond::where('is_kp', 0)->orderBy('id', 'DESC')->get();
+        $query = Dimond::where('is_kp', 0);
+
+        if ($request->filled('party_id')) {
+            $query->where('parties_id', $request->party_id);
+        }
+
+        if ($request->filled('designation')) {
+            $designation = $request->designation;
+            $query->whereIn('id', function ($subQuery) use ($designation) {
+                $subQuery->select('dimonds_id')
+                    ->from('processes')
+                    ->where(function ($q) {
+                        $q->where('return_weight', '')->orWhereNull('return_weight');
+                    })
+                    ->where('designation', $designation);
+            });
+        }
+
+        $dimonds = $query->orderBy('id', 'DESC')->get();
         return view('admin.dimond.index', compact('dimonds'));
+    }
+
+    /**
+     * Display diamonds older than 6 days that are not delivered.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Response
+     */
+    public function alertDiamonds(Request $request)
+    {
+        $query = Dimond::where('status', '!=', 'Delivered')
+            ->where('created_at', '<=', now()->subDays(6));
+
+        if ($request->filled('party_id')) {
+            $query->where('parties_id', $request->party_id);
+        }
+
+        $dimonds = $query->orderBy('created_at', 'DESC')->get();
+        $parties = Party::where('is_active', 1)->orderBy('fname', 'ASC')->get();
+
+        return view('admin.dimond.alert', compact('dimonds', 'parties'));
+    }
+
+    /**
+     * Export alert diamonds for a specific party or all alert diamonds.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
+    public function exportAlertDiamonds(Request $request)
+    {
+        $query = Dimond::where('status', '!=', 'Delivered')
+            ->where('created_at', '<=', now()->subDays(6));
+
+        if ($request->filled('party_id')) {
+            $query->where('parties_id', $request->party_id);
+        }
+
+        $diamonds = $query->orderBy('created_at', 'DESC')->get();
+        $partyName = null;
+
+        if ($request->filled('party_id')) {
+            $party = Party::find($request->party_id);
+            $partyName = $party ? Str::slug($party->fname . ' ' . $party->lname, '_') : 'party_' . $request->party_id;
+        }
+
+        $fileName = 'alert_diamonds' . ($partyName ? '_' . $partyName : '') . '_' . now()->format('Ymd_His') . '.xlsx';
+
+        return Excel::download(new AlertDiamondsExport($diamonds), $fileName);
     }
 
     /**

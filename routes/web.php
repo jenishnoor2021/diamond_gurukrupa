@@ -118,6 +118,8 @@ Route::group(['middleware' => ['auth', 'usersession']], function () {
     Route::patch('admin/dimond/update/{id}', [AdminDimondController::class, 'update'])->name('admin.dimond.update');
     Route::get('admin/dimond/toggle-kp/{id}', [AdminDimondController::class, 'toggleKp'])->name('admin.dimond.togglekp');
     Route::get('admin/dimond/destroy/{id}', [AdminDimondController::class, 'destroy'])->name('admin.dimond.destroy');
+    Route::get('admin/alert-diamonds', [AdminDimondController::class, 'alertDiamonds'])->name('admin.dimond.alert');
+    Route::get('admin/alert-diamonds/export', [AdminDimondController::class, 'exportAlertDiamonds'])->name('admin.dimond.alert.export');
     // Route::post('admin/dimond/updatestatus', [AdminDimondController::class, 'updateStatus'])->name('admin.dimond.updatestatus');
 
     Route::get("admin/processed/{status}", [AdminController::class, 'indexProcessed'])->name('admin.dimond.processed');

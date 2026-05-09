@@ -479,6 +479,9 @@ class AdminProcessController extends Controller
 
         DB::beginTransaction();
         try {
+            // Get outer designations to check category
+            $outerDesignation = Designation::where('category', 'Outter')->pluck('name')->toArray();
+
             foreach ($request->diamonds as $diamondId) {
                 $issueWeight = $request->issue_weights[$diamondId] ?? null;
                 $barcode = $request->barcode_number[$diamondId] ?? null;
@@ -496,8 +499,12 @@ class AdminProcessController extends Controller
                     // 'status' => 'ISSUED',
                 ]);
 
-                // Update diamond status
-                // Dimond::where('id', $diamondId)->update(['status' => 'ISSUED']);
+                // Update diamond status according to category
+                if (in_array($request->designation, $outerDesignation)) {
+                    Dimond::where('id', $diamondId)->update(['status' => 'OutterProcessing']);
+                } else {
+                    Dimond::where('id', $diamondId)->update(['status' => 'Processing']);
+                }
             }
 
             DB::commit();
