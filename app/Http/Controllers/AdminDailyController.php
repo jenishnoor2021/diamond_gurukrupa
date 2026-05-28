@@ -18,9 +18,17 @@ class AdminDailyController extends Controller
      */
     public function index()
     {
+        // $this->syncDailyRecords();
+
         // $outerdesignation = Designation::where('category', 'Outter')->pluck('name')->toArray();
-        $dailys = Daily::orderByRaw('FIELD(status, 0, 1)')->get();
-        $dimondcount = Dimond::whereNotIn('status', ['Delivered', 'Completed'])->where('is_kp', 0)->count();
+        $dailys = Daily::with('dimonds')
+            ->whereHas('dimonds', function ($query) {
+                $query->whereNotIn('status', ['Delivered', 'Completed', 'OutterProcessing'])
+                    ->where('is_kp', 0);
+            })
+            ->orderByRaw('FIELD(status, 0, 1)')
+            ->get();
+        $dimondcount = Dimond::whereNotIn('status', ['Delivered', 'Completed', 'OutterProcessing'])->where('is_kp', 0)->count();
         $pendingcount = Dimond::where('status', 'Pending')->where('is_kp', 0)->count();
         $issuecount = Dimond::where('status', 'Processing')->where('is_kp', 0)->count();
         $outercount = Dimond::where('status', 'OutterProcessing')->where('is_kp', 0)->count();
@@ -44,6 +52,24 @@ class AdminDailyController extends Controller
         $scancount = Daily::where('status', 1)->count();
 
         return view('admin.daily.index', compact('dailys', 'outercount', 'dimondcount', 'issuecount', 'pendingcount', 'scancount'));
+    }
+
+    protected function syncDailyRecords()
+    {
+        $activeDimonds = Dimond::whereNotIn('status', ['Delivered', 'Completed'])
+            ->where('is_kp', 0)
+            ->get();
+
+        foreach ($activeDimonds as $dimond) {
+            Daily::firstOrCreate(
+                ['barcode' => $dimond->barcode_number],
+                [
+                    'dimonds_id' => $dimond->id,
+                    'stage' => 'No',
+                    'status' => 0,
+                ]
+            );
+        }
     }
 
     /**

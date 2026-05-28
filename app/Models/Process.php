@@ -12,6 +12,12 @@ class Process extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'issue_weight' => 'float',
+        'return_weight' => 'float',
+        'price' => 'float',
+    ];
+
     public function dimonds()
     {
         return $this->belongsTo(Dimond::class);

@@ -103,6 +103,7 @@
                     <li><a href="/admin/worker_issue_report" key="t-full-calendar">Worker Issue Report</a></li>
                     <li><a href="/admin/party-report" key="t-full-calendar">Party Bill</a></li>
                     <li><a href="/admin/party-filter" key="t-full-calendar">Party Filter</a></li>
+                    <li><a href="/admin/party-designation-filter" key="t-full-calendar">Party Designation Filter</a></li>
                     <li><a href="/admin/summary" key="t-full-calendar">Summary</a></li>
                     <li><a href="/admin/worker_summary" key="t-full-calendar">Worker Summary</a></li>
                     <li><a href="/admin/dimond_list" key="t-full-calendar">ADD Dimond list</a></li>

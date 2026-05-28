@@ -670,6 +670,47 @@ class AdminExpenceController extends Controller
         return view('admin.reports.party_filter', compact('partyLists', 'dimonds'));
     }
 
+    public function partyDesignationFilter(Request $request)
+    {
+        $partyLists = Party::where('is_active', 1)->get();
+        $designations = Designation::orderBy('name')->get();
+
+        $partyId = $request->input('party_id');
+        $designation = $request->input('designation');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
+        $processesQuery = Process::with('dimonds.parties');
+
+        if ($partyId && $partyId !== 'All') {
+            $processesQuery->whereHas('dimonds', function ($query) use ($partyId) {
+                $query->where('parties_id', $partyId);
+            });
+        }
+
+        if (!empty($designation)) {
+            $processesQuery->where('designation', $designation);
+        }
+
+        if (!empty($startDate)) {
+            $processesQuery->where('return_date', '>=', $startDate);
+        }
+
+        if (!empty($endDate)) {
+            $processesQuery->where('return_date', '<=', $endDate);
+        }
+
+        $processes = $processesQuery->orderByDesc('return_date')->orderByDesc('id')->get();
+
+        // Only show results if any filter is applied
+        $hasFilter = $partyId || $designation || $startDate || $endDate;
+        $processes = $hasFilter
+            ? $processesQuery->orderByDesc('return_date')->orderByDesc('id')->get()
+            : collect();
+
+        return view('admin.reports.party_designation_filter', compact('partyLists', 'designations', 'processes'));
+    }
+
     public function repair(Request $request, $id)
     {
         // $check_exist = Repair::where('dimonds_id', $id)->get();
