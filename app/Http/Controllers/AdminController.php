@@ -128,12 +128,13 @@ class AdminController extends Controller
 
     public function dashboard()
     {
-        $pending_count = Dimond::where('status', 'Pending')->count();
-        $completed_count = Dimond::where('status', 'Completed')->count();
-        $deliverd_count = Dimond::where('status', 'Delivered')->count();
-        $total_count = Dimond::where('status', '!=', 'Delivered')->count();
-        $processing_count = Dimond::where('status', 'Processing')->count();
-        $outercount = Dimond::where('status', 'OutterProcessing')->count();
+        $pending_count = Dimond::where('status', 'Pending')->where('is_kp', 0)->count();
+        $completed_count = Dimond::where('status', 'Completed')->where('is_kp', 0)->count();
+        $deliverd_count = Dimond::where('status', 'Delivered')->where('is_kp', 0)->count();
+        $current_month_delivered_count = Dimond::where('status', 'Delivered')->whereYear('delevery_date', Carbon::now()->year)->whereMonth('delevery_date', Carbon::now()->month)->where('is_kp', 0)->count();
+        $total_count = Dimond::where('status', '!=', 'Delivered')->where('is_kp', 0)->count();
+        $processing_count = Dimond::where('status', 'Processing')->where('is_kp', 0)->count();
+        $outercount = Dimond::where('status', 'OutterProcessing')->where('is_kp', 0)->count();
 
         $partyes = Party::where('is_active', 1)->get();
 
@@ -170,7 +171,7 @@ class AdminController extends Controller
             ];
         }
 
-        return view('admin.index', compact('pending_count', 'processing_count', 'completed_count', 'deliverd_count', 'total_count', 'outercount', 'workerData', 'selectedMonth', 'partyes'));
+        return view('admin.index', compact('pending_count', 'processing_count', 'completed_count', 'deliverd_count', 'total_count', 'outercount', 'workerData', 'selectedMonth', 'partyes', 'current_month_delivered_count'));
     }
 
     public function profiledit($id)

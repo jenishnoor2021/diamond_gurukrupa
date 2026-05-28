@@ -111,42 +111,58 @@ use App\Models\Process;
         </div>
         @endif
         @else
-        <!-- Show summary table with party names and diamond counts -->
-        <div class="card">
-          <div class="card-header bg-light">
-            <h5 class="mb-0">Alert Diamonds Summary - All Parties</h5>
+        <!-- Show diamonds grouped by party -->
+        @forelse($dimonds->groupBy('parties_id') as $partyId => $partyDimonds)
+        <div class="card mb-4">
+          <div class="card-header bg-light d-flex align-items-center justify-content-between">
+            <div>
+              <h5 class="mb-0">
+                {{ $partyDimonds->first()->parties->fname }} {{ $partyDimonds->first()->parties->lname }}
+                <span class="badge bg-danger ms-2">{{ $partyDimonds->count() }} Diamonds</span>
+              </h5>
+            </div>
+            <div>
+              <a href="{{ route('admin.dimond.alert.export', ['party_id' => $partyId]) }}" class="btn btn-success btn-sm">
+                <i class="mdi mdi-file-excel me-1"></i> Export Excel
+              </a>
+            </div>
           </div>
           <div class="card-body">
-            @php
-            $partySummary = $parties->map(function($party) use ($dimonds) {
-            $count = $dimonds->where('parties_id', $party->id)->count();
-            return [
-            'party' => $party,
-            'count' => $count,
-            'party_id' => $party->id
-            ];
-            });
-            @endphp
             <div class="table-responsive">
-              <table id="partySummaryTable" class="table table-bordered dt-responsive nowrap w-100 datatable">
+              <table id="datatable-{{ $partyId }}" class="table table-bordered dt-responsive nowrap w-100 datatable">
                 <thead>
                   <tr>
-                    <th>Party Name</th>
-                    <th>No. of Diamonds</th>
                     <th>Action</th>
+                    <th>Barcode</th>
+                    <th>Diamond Name</th>
+                    <th>Janger No</th>
+                    <th>Weight</th>
+                    <th>Status</th>
+                    <th>Created At</th>
+                    <th>Days Pending</th>
+                    <th>Process</th>
                   </tr>
                 </thead>
                 <tbody>
-                  @foreach ($partySummary as $summary)
+                  @foreach ($partyDimonds as $dimond)
+                  @php
+                  $process = Process::where('dimonds_id', $dimond->id)->latest()->first();
+                  $designation = isset($process) ? $process->designation : '';
+                  $pendingDays = $dimond->created_at ? $dimond->created_at->diffInDays(now()) : '';
+                  @endphp
                   <tr>
-                    <td>{{ $summary['party']->fname }} {{ $summary['party']->lname }}</td>
-                    <td><span class="badge bg-danger p-2" style="font-size:15px;">{{ $summary['count'] }}</span></td>
                     <td>
-                      <a href="{{ route('admin.dimond.alert', ['party_id' => $summary['party_id']]) }}" class="btn btn-primary btn-sm">View Details</a>
-                      <a href="{{ route('admin.dimond.alert.export', ['party_id' => $summary['party_id']]) }}" class="btn btn-success btn-sm">
-                        <i class="mdi mdi-file-excel"></i>
-                      </a>
+                      <a href="/admin/print-image/{{ $dimond->id }}" target="_blank" class="btn btn-primary btn-sm">Print</a>
+                      <a href="{{ route('admin.dimond.show', $dimond->barcode_number) }}" class="btn btn-info btn-sm"><i class="fa fa-eye"></i></a>
                     </td>
+                    <td>{{ $dimond->barcode_number }}</td>
+                    <td>{{ $dimond->dimond_name }}</td>
+                    <td>{{ $dimond->janger_no }}</td>
+                    <td>{{ $dimond->weight }}</td>
+                    <td>{{ $dimond->status }}</td>
+                    <td>{{ $dimond->created_at ? $dimond->created_at->format('Y-m-d') : '' }}</td>
+                    <td>{{ $pendingDays }}</td>
+                    <td>{{ $designation }}</td>
                   </tr>
                   @endforeach
                 </tbody>
@@ -154,6 +170,11 @@ use App\Models\Process;
             </div>
           </div>
         </div>
+        @empty
+        <div class="alert alert-info">
+          No alert diamonds found.
+        </div>
+        @endforelse
         @endif
 
       </div>

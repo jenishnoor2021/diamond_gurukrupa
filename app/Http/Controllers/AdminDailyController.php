@@ -20,10 +20,10 @@ class AdminDailyController extends Controller
     {
         // $outerdesignation = Designation::where('category', 'Outter')->pluck('name')->toArray();
         $dailys = Daily::orderByRaw('FIELD(status, 0, 1)')->get();
-        $dimondcount = Dimond::whereNotIn('status', ['Delivered', 'Completed'])->count();
-        $pendingcount = Dimond::where('status', 'Pending')->count();
-        $issuecount = Dimond::where('status', 'Processing')->count();
-        $outercount = Dimond::where('status', 'OutterProcessing')->count();
+        $dimondcount = Dimond::whereNotIn('status', ['Delivered', 'Completed'])->where('is_kp', 0)->count();
+        $pendingcount = Dimond::where('status', 'Pending')->where('is_kp', 0)->count();
+        $issuecount = Dimond::where('status', 'Processing')->where('is_kp', 0)->count();
+        $outercount = Dimond::where('status', 'OutterProcessing')->where('is_kp', 0)->count();
         // $distinctDimondIds = Process::select('dimonds_id')->distinct()->pluck('dimonds_id')->toArray();
         // $getdimonds = Dimond::whereIn('id', $distinctDimondIds)->whereNotIn('status', ['Delivered', 'Completed', 'Pending'])->get();
         // $issuecount = 0;

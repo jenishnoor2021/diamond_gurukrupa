@@ -636,6 +636,8 @@ class AdminExpenceController extends Controller
         $status = $request->input('status');
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
+        $minWeight = $request->input('min_weight');
+        $maxWeight = $request->input('max_weight');
         // $outerProcess = $request->input('process');
         $dimondsQuery = Dimond::query();
         if (isset($partyId) && $partyId != 'All') {
@@ -654,6 +656,13 @@ class AdminExpenceController extends Controller
                 // If only start date is provided
                 $dimondsQuery->where('delevery_date', '>=', $startDate);
             }
+        }
+
+        if (isset($minWeight) && $minWeight != '') {
+            $dimondsQuery->where('weight', '>=', $minWeight);
+        }
+        if (isset($maxWeight) && $maxWeight != '') {
+            $dimondsQuery->where('weight', '<=', $maxWeight);
         }
 
         $dimonds = $partyId ? $dimondsQuery->get() : [];
@@ -1035,7 +1044,7 @@ class AdminExpenceController extends Controller
 
         return redirect()->back()->with('error', "Please select Ids");
     }
-    
+
     public function diamondSlipExcel(Request $request)
     {
         $selectedRows = $request->input('selectedIds');
@@ -1127,7 +1136,7 @@ class AdminExpenceController extends Controller
 
         // return $pdf->download('barcodes-list.pdf');
     }
-    
+
     public function getProcessDetails(Request $request)
     {
         $dimondId = $request->input('dimond_id');
@@ -1140,7 +1149,7 @@ class AdminExpenceController extends Controller
 
         return view('partials.process_details_modal', compact('processes'))->render();
     }
-    
+
     public function diamondSlipJanger(Request $request)
     {
         $partyLists = Party::where('is_active', 1)->get();

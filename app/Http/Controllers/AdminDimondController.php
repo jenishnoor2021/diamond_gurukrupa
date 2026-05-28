@@ -47,14 +47,43 @@ class AdminDimondController extends Controller
 
         if ($request->filled('designation')) {
             $designation = $request->designation;
-            $query->whereIn('id', function ($subQuery) use ($designation) {
-                $subQuery->select('dimonds_id')
-                    ->from('processes')
-                    ->where(function ($q) {
-                        $q->where('return_weight', '')->orWhereNull('return_weight');
-                    })
-                    ->where('designation', $designation);
-            });
+
+            if ($designation === 'return') {
+                $query->whereIn('id', function ($subQuery) {
+                    $subQuery->select('dimonds_id')
+                        ->from('processes')
+                        ->whereNotNull('return_weight')
+                        ->where('return_weight', '!=', '');
+                });
+            } elseif ($designation === 'repair') {
+                // show diamonds that have an entry in the repairs table
+                $query->whereIn('id', function ($subQuery) {
+                    $subQuery->select('dimonds_id')
+                        ->from('repairs');
+                });
+            } else {
+                $query->whereIn('id', function ($subQuery) use ($designation) {
+                    $subQuery->select('dimonds_id')
+                        ->from('processes')
+                        ->where(function ($q) {
+                            $q->where('return_weight', '')->orWhereNull('return_weight');
+                        })
+                        ->where('designation', $designation);
+                });
+            }
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('status_not')) {
+            $query->where('status', '!=', $request->status_not);
+        }
+
+        if ($request->filled('delivery_year') && $request->filled('delivery_month')) {
+            $query->whereYear('delevery_date', $request->delivery_year)
+                ->whereMonth('delevery_date', $request->delivery_month);
         }
 
         $dimonds = $query->orderBy('id', 'DESC')->get();
@@ -69,7 +98,7 @@ class AdminDimondController extends Controller
      */
     public function alertDiamonds(Request $request)
     {
-        $query = Dimond::where('status', '!=', 'Delivered')
+        $query = Dimond::where('status', '!=', 'Delivered')->where('is_kp', 0)
             ->where('created_at', '<=', now()->subDays(6));
 
         if ($request->filled('party_id')) {
@@ -90,7 +119,7 @@ class AdminDimondController extends Controller
      */
     public function exportAlertDiamonds(Request $request)
     {
-        $query = Dimond::where('status', '!=', 'Delivered')
+        $query = Dimond::where('status', '!=', 'Delivered')->where('is_kp', 0)
             ->where('created_at', '<=', now()->subDays(6));
 
         if ($request->filled('party_id')) {
@@ -426,11 +455,11 @@ class AdminDimondController extends Controller
 
     public function hrDimond()
     {
-        $deliveredDimonds = Dimond::where('status', 'Delivered')->orderBy('id', 'DESC')->get();
-        $completedDimonds = Dimond::where('status', 'Completed')->orderBy('id', 'DESC')->get();
-        $todayDeliveryDimonds = Dimond::where('status', 'Delivered')->whereDate('updated_at', today())->orderBy('id', 'DESC')->get();
-        $processingDimonds = Dimond::whereIn('status', ['Processing', 'OutterProcessing'])->orderBy('id', 'DESC')->get();
-        $pendingDimonds = Dimond::where('status', 'Pending')->orderBy('id', 'DESC')->get();
+        $deliveredDimonds = Dimond::where('status', 'Delivered')->orderBy('id', 'DESC')->where('is_kp', 0)->get();
+        $completedDimonds = Dimond::where('status', 'Completed')->orderBy('id', 'DESC')->where('is_kp', 0)->get();
+        $todayDeliveryDimonds = Dimond::where('status', 'Delivered')->whereDate('updated_at', today())->orderBy('id', 'DESC')->where('is_kp', 0)->get();
+        $processingDimonds = Dimond::whereIn('status', ['Processing', 'OutterProcessing'])->orderBy('id', 'DESC')->where('is_kp', 0)->get();
+        $pendingDimonds = Dimond::where('status', 'Pending')->orderBy('id', 'DESC')->where('is_kp', 0)->get();
         $repairDimonds = Repair::orderBy('id', 'DESC')->get();
         return view('admin.dimond.hrdimond', compact('deliveredDimonds', 'completedDimonds', 'todayDeliveryDimonds', 'processingDimonds', 'pendingDimonds', 'repairDimonds'));
     }

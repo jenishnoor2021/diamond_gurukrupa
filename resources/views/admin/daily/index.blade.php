@@ -106,7 +106,7 @@
                 </div>
             </div>
 
-            <div class="col-md-2">
+            <!-- <div class="col-md-2">
                 <div class="card mini-stats-wid">
                     <div class="card-body">
                         <div class="d-flex">
@@ -125,7 +125,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
         </div>
         <!-- end row -->

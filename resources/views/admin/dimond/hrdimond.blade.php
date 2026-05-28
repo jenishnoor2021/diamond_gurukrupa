@@ -53,7 +53,7 @@ use App\Models\Dimond;
 
         <div class="tab-content mt-4">
           <div class="tab-pane" id="transactions-repair-tab" role="tabpanel">
-            <div class="table-responsive" data-simplebar style="max-height: 330px;">
+            <div class="table-responsive" data-simplebar style="max-height: 600px;">
               <table class="table table-hover datatable dt-responsive nowrap">
                 <thead>
                   <tr>
@@ -96,7 +96,7 @@ use App\Models\Dimond;
             </div>
           </div>
           <div class="tab-pane" id="transactions-delivery-tab" role="tabpanel">
-            <div class="table-responsive" data-simplebar style="max-height: 330px;">
+            <div class="table-responsive" data-simplebar style="max-height: 600px;">
               <table class="table table-hover datatable dt-responsive nowrap">
                 <thead>
                   <tr>
@@ -138,8 +138,8 @@ use App\Models\Dimond;
             </div>
           </div>
           <div class="tab-pane active" id="transactions-complete-tab" role="tabpanel">
-            <div class="table-responsive" data-simplebar style="max-height: 330px;">
-              <table class="table align-middle table-nowrap">
+            <div class="table-responsive" data-simplebar style="max-height: 600px;">
+              <table class="table align-middle table-nowrap datatable">
                 <thead>
                   <tr>
                     <th>Slip</th>
@@ -176,8 +176,8 @@ use App\Models\Dimond;
             </div>
           </div>
           <div class="tab-pane" id="transactions-today-complete-tab" role="tabpanel">
-            <div class="table-responsive" data-simplebar style="max-height: 330px;">
-              <table class="table align-middle table-nowrap">
+            <div class="table-responsive" data-simplebar style="max-height: 600px;">
+              <table class="table align-middle table-nowrap datatable">
                 <thead>
                   <tr>
                     <th>Slip</th>
@@ -214,8 +214,8 @@ use App\Models\Dimond;
             </div>
           </div>
           <div class="tab-pane" id="transactions-processing-tab" role="tabpanel">
-            <div class="table-responsive" data-simplebar style="max-height: 330px;">
-              <table class="table align-middle table-nowrap">
+            <div class="table-responsive" data-simplebar style="max-height: 600px;">
+              <table class="table align-middle table-nowrap datatable">
                 <thead>
                   <tr>
                     <th>Party Name</th>
@@ -250,8 +250,8 @@ use App\Models\Dimond;
             </div>
           </div>
           <div class="tab-pane" id="transactions-pending-tab" role="tabpanel">
-            <div class="table-responsive" data-simplebar style="max-height: 330px;">
-              <table class="table align-middle table-nowrap">
+            <div class="table-responsive" data-simplebar style="max-height: 600px;">
+              <table class="table align-middle table-nowrap datatable">
                 <thead>
                   <tr>
                     <th>Date</th>
@@ -294,4 +294,31 @@ use App\Models\Dimond;
   </div>
 </div>
 
+@endsection
+
+@section('script')
+<script>
+  $(document).ready(function() {
+    if ($.fn.DataTable) {
+      $('.datatable').each(function() {
+        if (!$.fn.dataTable.isDataTable(this)) {
+          $(this).DataTable({
+            // responsive: true,
+            //dom: 'Bfrtip',
+            //buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
+            pageLength: 25
+          });
+        }
+      });
+
+      // Adjust columns when Bootstrap tab becomes visible
+      $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
+        $.fn.dataTable.tables({
+          visible: true,
+          api: true
+        }).columns.adjust();
+      });
+    }
+  });
+</script>
 @endsection
