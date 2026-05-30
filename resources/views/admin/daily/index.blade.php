@@ -22,7 +22,7 @@
     <div class="col-xl-12">
         <div class="row">
 
-            <div class="col-md-2">
+            <div class="col-md-3">
                 <div class="card mini-stats-wid">
                     <div class="card-body">
                         <div class="d-flex">
@@ -43,7 +43,7 @@
                 </div>
             </div>
 
-            <div class="col-md-2">
+            <div class="col-md-3">
                 <div class="card mini-stats-wid">
                     <div class="card-body">
                         <div class="d-flex">
@@ -64,7 +64,7 @@
                 </div>
             </div>
 
-            <div class="col-md-2">
+            <!-- <div class="col-md-2">
                 <div class="card mini-stats-wid">
                     <div class="card-body">
                         <div class="d-flex">
@@ -83,9 +83,9 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
-            <div class="col-md-2">
+            <div class="col-md-3">
                 <div class="card mini-stats-wid">
                     <div class="card-body">
                         <div class="d-flex">
@@ -166,6 +166,7 @@
                             <div>
                                 <form method="POST" action="{{ route('admin.daily-status.store') }}">
                                     @csrf
+                                    <input type="hidden" name="party_id" value="{{ request('party_id') }}">
                                     <input type="text" id="inputField2" name="inputField" class="form-control" placeholder="Search barcode" required>
                                 </form>
                             </div>
@@ -177,6 +178,43 @@
                             </div>
                         </span>
 
+                    </div>
+                </div>
+
+                @if($selectedParty)
+                <div class="mb-3">
+                    <span class="badge bg-warning text-dark" style="font-size:15px;">Showing diamonds for: {{ $selectedParty->fname ?? '' }} {{ $selectedParty->lname ?? '' }}</span>
+                    <a href="{{ route('admin.daily-status.index') }}" class="btn btn-sm btn-secondary ms-2">Clear filter</a>
+                </div>
+                @endif
+
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">Party List</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Party</th>
+                                        <th>Total Diamonds</th>
+                                        <th>Scanned</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($partyList as $party)
+                                    <tr>
+                                        <td>{{ $party->fname ?? '' }} {{ $party->lname ?? '' }}</td>
+                                        <td>{{ $party->total_diamonds }}</td>
+                                        <td>{{ $party->scanned_diamonds }}</td>
+                                        <td>
+                                            <a href="{{ route('admin.daily-status.index', ['party_id' => $party->id]) }}" class="btn btn-sm btn-primary">View</a>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
@@ -206,7 +244,7 @@
                             <td>{{ \Carbon\Carbon::parse($dimond->updated_at)->format('d-m-Y') }}</td>
                             <td>{{ $dimond->dimonds->status }}</td>
                             <!-- <td><b><span class="{{ $dimond->stage == 'issue' ? 'text-success' : 'text-danger' }}">{{ $dimond->stage }}</span></b></td> -->
-                            <td><a href="/admin/daily-status/statusupdate/{{ $dimond->id }}"
+                            <td><a href="{{ route('admin.daily-status.updatestatus', ['id' => $dimond->id]) }}{{ request('party_id') ? '?party_id=' . request('party_id') : '' }}"
                                     class="btn {{ $dimond->status == 0 ? 'btn-danger' : 'btn-success' }}">{{ $dimond->stage }}</a>
                             </td>
                         </tr>

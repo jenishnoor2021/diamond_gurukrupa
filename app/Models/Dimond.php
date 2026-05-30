@@ -14,6 +14,11 @@ class Dimond extends Model
 
     public function parties()
     {
-        return $this->belongsTo(Party::class);
+        return $this->belongsTo(Party::class, 'parties_id');
+    }
+
+    public function daily()
+    {
+        return $this->hasOne(Daily::class, 'dimonds_id');
     }
 }

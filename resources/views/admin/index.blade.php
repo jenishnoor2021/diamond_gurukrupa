@@ -228,7 +228,7 @@ use Illuminate\Support\Facades\DB;
                                 ->where('processes.designation', 'HPHT')
                                 ->count();
 
-                            $totalDimond = Dimond::where('parties_id', $partyList->id)->where('status', '!=', 'Delivered')->where('status', '!=', 'OutterProcessing')->where('is_kp', 0)->count();
+                            $totalDimond = Dimond::where('parties_id', $partyList->id)->where('status', '!=', 'Delivered')->where('status', '!=', 'Completed')->where('status', '!=', 'OutterProcessing')->where('is_kp', 0)->count();
                             $outterDimond = Dimond::where(['parties_id' => $partyList->id, 'status' => 'OutterProcessing'])->where('is_kp', 0)->count();
                             $pendingDimond = Dimond::where(['parties_id' => $partyList->id, 'status' => 'Pending'])->where('is_kp', 0)->count();
                             $processingDimond = Dimond::where('parties_id', $partyList->id)->where('status', 'Processing')->where('is_kp', 0)->count();

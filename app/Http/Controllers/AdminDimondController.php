@@ -86,7 +86,7 @@ class AdminDimondController extends Controller
                 ->whereMonth('delevery_date', $request->delivery_month);
         }
 
-        $dimonds = $query->orderBy('id', 'DESC')->get();
+        $dimonds = $query->where('status', '!=', 'OutterProcessing')->orderBy('id', 'DESC')->get();
         return view('admin.dimond.index', compact('dimonds'));
     }
 

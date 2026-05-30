@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Daily;
 use App\Models\Dimond;
+use App\Models\Party;
 use App\Models\Process;
 use App\Models\Designation;
 use Illuminate\Http\Request;
@@ -16,42 +17,61 @@ class AdminDailyController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        // $this->syncDailyRecords();
+        $partyId = $request->query('party_id');
 
-        // $outerdesignation = Designation::where('category', 'Outter')->pluck('name')->toArray();
+        $baseDimondQuery = Dimond::whereNotIn('status', ['Delivered', 'Completed', 'OutterProcessing'])
+            ->where('is_kp', 0);
+
+        if ($partyId) {
+            $baseDimondQuery->where('parties_id', $partyId);
+        }
+
         $dailys = Daily::with('dimonds')
-            ->whereHas('dimonds', function ($query) {
+            ->whereHas('dimonds', function ($query) use ($partyId) {
                 $query->whereNotIn('status', ['Delivered', 'Completed', 'OutterProcessing'])
                     ->where('is_kp', 0);
+                if ($partyId) {
+                    $query->where('parties_id', $partyId);
+                }
             })
             ->orderByRaw('FIELD(status, 0, 1)')
             ->get();
-        $dimondcount = Dimond::whereNotIn('status', ['Delivered', 'Completed', 'OutterProcessing'])->where('is_kp', 0)->count();
-        $pendingcount = Dimond::where('status', 'Pending')->where('is_kp', 0)->count();
-        $issuecount = Dimond::where('status', 'Processing')->where('is_kp', 0)->count();
-        $outercount = Dimond::where('status', 'OutterProcessing')->where('is_kp', 0)->count();
-        // $distinctDimondIds = Process::select('dimonds_id')->distinct()->pluck('dimonds_id')->toArray();
-        // $getdimonds = Dimond::whereIn('id', $distinctDimondIds)->whereNotIn('status', ['Delivered', 'Completed', 'Pending'])->get();
-        // $issuecount = 0;
-        // $outercount = 0;
-        // foreach ($getdimonds as $val) {
-        //     $var = Process::where('dimonds_id', $val->id)->latest()->first();
-        //     if (in_array($var->designation, $outerdesignation)) {
-        //         if (empty($var->return_weight)) {
-        //             $outercount += 1;
-        //         } else {
-        //             $issuecount += 1;
-        //         }
-        //     } else {
-        //         $issuecount += 1;
-        //     }
-        // }
 
-        $scancount = Daily::where('status', 1)->count();
+        $dimondcount = (clone $baseDimondQuery)->count();
+        $pendingcount = (clone $baseDimondQuery)->where('status', 'Pending')->count();
+        $issuecount = (clone $baseDimondQuery)->where('status', 'Processing')->count();
+        $outercount = (clone $baseDimondQuery)->where('status', 'OutterProcessing')->count();
 
-        return view('admin.daily.index', compact('dailys', 'outercount', 'dimondcount', 'issuecount', 'pendingcount', 'scancount'));
+        $scancountQuery = Daily::where('status', 1)->whereHas('dimonds', function ($query) use ($partyId) {
+            $query->whereNotIn('status', ['Delivered', 'Completed', 'OutterProcessing'])
+                ->where('is_kp', 0);
+            if ($partyId) {
+                $query->where('parties_id', $partyId);
+            }
+        });
+        $scancount = $scancountQuery->count();
+
+        $partyList = Party::withCount([
+            'dimonds as total_diamonds' => function ($query) {
+                $query->whereNotIn('status', ['Delivered', 'Completed', 'OutterProcessing'])
+                    ->where('is_kp', 0);
+            },
+            'dimonds as scanned_diamonds' => function ($query) {
+                $query->whereNotIn('status', ['Delivered', 'Completed', 'OutterProcessing'])
+                    ->where('is_kp', 0)->whereHas('daily', function ($q) {
+                        $q->where('status', 1);
+                    });
+            },
+        ])->whereHas('dimonds', function ($query) {
+            $query->whereNotIn('status', ['Delivered', 'Completed', 'OutterProcessing'])
+                ->where('is_kp', 0);
+        })->get();
+
+        $selectedParty = $partyId ? Party::find($partyId) : null;
+
+        return view('admin.daily.index', compact('dailys', 'outercount', 'dimondcount', 'issuecount', 'pendingcount', 'scancount', 'partyList', 'selectedParty'));
     }
 
     protected function syncDailyRecords()
@@ -110,9 +130,7 @@ class AdminDailyController extends Controller
                         $status = 1;
                         $stage = 'Done';
                     } else {
-                        // $status = 0;
-                        // $stage = 'No';
-                        return redirect()->back()->with('success', "Dimond already scanned");
+                        return redirect()->route('admin.daily-status.index', ['party_id' => $request->party_id])->with('success', "Dimond already scanned");
                     }
                     $dailys->update([
                         'stage' => $stage,
@@ -120,7 +138,7 @@ class AdminDailyController extends Controller
                     ]);
                 }
             }
-            return redirect()->back()->with('success', "Add / Update Record Successfully");
+            return redirect()->route('admin.daily-status.index', ['party_id' => $request->party_id])->with('success', "Add / Update Record Successfully");
         }
         return redirect()->back()->with('error', "Invalid Barcode");
     }

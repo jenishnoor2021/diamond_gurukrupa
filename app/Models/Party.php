@@ -10,4 +10,9 @@ class Party extends Model
     use HasFactory;
 
     protected $guarded = [];
+
+    public function dimonds()
+    {
+        return $this->hasMany(Dimond::class, 'parties_id');
+    }
 }
