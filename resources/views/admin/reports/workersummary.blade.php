@@ -158,7 +158,7 @@ use App\Models\Process;
                 <tbody>
                     @foreach ($workerprocess as $workerpro)
                     <?php
-                    $dimond = Dimond::where('barcode_number', $workerpro->dimonds_barcode)->first();
+                    $dimond = Dimond::where('barcode_number', $workerpro->dimonds_barcode)->where('is_kp', 0)->first();
                     ?>
                     <tr>
                         <td>

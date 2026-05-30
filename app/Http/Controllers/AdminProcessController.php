@@ -732,7 +732,7 @@ class AdminProcessController extends Controller
             $diamondIds = $processRecords->pluck('dimonds_id')->unique()->toArray();
 
             // Get diamonds with their weights
-            $diamondsQuery = Dimond::whereIn('id', $diamondIds);
+            $diamondsQuery = Dimond::where('is_kp', 0)->whereIn('id', $diamondIds);
 
             // Filter by weight range if provided
             if ($minRange !== '' && $minRange !== null) {

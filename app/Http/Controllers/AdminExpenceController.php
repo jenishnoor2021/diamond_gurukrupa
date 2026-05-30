@@ -355,14 +355,14 @@ class AdminExpenceController extends Controller
 
         if (isset($startDate) && isset($endDate)) {
             if ($category == 'Outter') {
-                $getdeliverddimonds = Dimond::whereDate('updated_at', '>=', $startDate)->whereDate('updated_at', '<=', $endDate)->pluck('id')->toArray();
+                $getdeliverddimonds = Dimond::whereDate('updated_at', '>=', $startDate)->whereDate('updated_at', '<=', $endDate)->where('is_kp', 0)->pluck('id')->toArray();
             }
             if ($category != 'Outter') {
                 if ($whichDiamond == 'updated_at') {
-                    $getdeliverddimonds = Dimond::whereDate($whichDiamond, '>=', $startDate)->whereDate($whichDiamond, '<=', $endDate)->pluck('id')->toArray();
+                    $getdeliverddimonds = Dimond::whereDate($whichDiamond, '>=', $startDate)->whereDate($whichDiamond, '<=', $endDate)->where('is_kp', 0)->pluck('id')->toArray();
                 }
                 if ($whichDiamond == 'delevery_date') {
-                    $getdeliverddimonds = Dimond::where('status', 'Delivered')->whereDate($whichDiamond, '>=', $startDate)->whereDate($whichDiamond, '<=', $endDate)->pluck('id')->toArray();
+                    $getdeliverddimonds = Dimond::where('status', 'Delivered')->whereDate($whichDiamond, '>=', $startDate)->whereDate($whichDiamond, '<=', $endDate)->where('is_kp', 0)->pluck('id')->toArray();
                 }
             }
         }
@@ -430,14 +430,14 @@ class AdminExpenceController extends Controller
 
         if (isset($startDate) && isset($endDate)) {
             if ($category == 'Outter') {
-                $getdeliverddimonds = Dimond::whereDate('updated_at', '>=', $startDate)->whereDate('updated_at', '<=', $endDate)->pluck('id')->toArray();
+                $getdeliverddimonds = Dimond::whereDate('updated_at', '>=', $startDate)->whereDate('updated_at', '<=', $endDate)->where('is_kp', 0)->pluck('id')->toArray();
             }
             if ($category != 'Outter') {
                 if ($whichDiamond == 'updated_at') {
-                    $getdeliverddimonds = Dimond::whereDate($whichDiamond, '>=', $startDate)->whereDate($whichDiamond, '<=', $endDate)->pluck('id')->toArray();
+                    $getdeliverddimonds = Dimond::whereDate($whichDiamond, '>=', $startDate)->whereDate($whichDiamond, '<=', $endDate)->where('is_kp', 0)->pluck('id')->toArray();
                 }
                 if ($whichDiamond == 'delevery_date') {
-                    $getdeliverddimonds = Dimond::where('status', 'Delivered')->whereDate($whichDiamond, '>=', $startDate)->whereDate($whichDiamond, '<=', $endDate)->pluck('id')->toArray();
+                    $getdeliverddimonds = Dimond::where('status', 'Delivered')->whereDate($whichDiamond, '>=', $startDate)->whereDate($whichDiamond, '<=', $endDate)->where('is_kp', 0)->pluck('id')->toArray();
                 }
             }
         }
@@ -506,7 +506,7 @@ class AdminExpenceController extends Controller
         $company = Company::first();
 
         $party = Party::where('id', $partyId)->first();
-        $data = Dimond::where(['parties_id' => $partyId, 'status' => 'Delivered'])->whereDate('delevery_date', '>=', $startDate)->whereDate('delevery_date', '<=', $endDate)->get();
+        $data = Dimond::where(['parties_id' => $partyId, 'status' => 'Delivered'])->whereDate('delevery_date', '>=', $startDate)->whereDate('delevery_date', '<=', $endDate)->where('is_kp', 0)->get();
 
         $pdf = PDF::loadView('admin.reports.party_bill_template', compact('data', 'party', 'getGst', 'company'));
         // Session::flash('success', "Download Record Successfully");
@@ -532,7 +532,7 @@ class AdminExpenceController extends Controller
         $getGst = $request->input('add_gst');
 
         $party = Party::where('id', $partyId)->first();
-        $data = Dimond::where(['parties_id' => $partyId, 'status' => 'Delivered'])->whereDate('delevery_date', '>=', $startDate)->whereDate('delevery_date', '<=', $endDate)->get();
+        $data = Dimond::where(['parties_id' => $partyId, 'status' => 'Delivered'])->whereDate('delevery_date', '>=', $startDate)->whereDate('delevery_date', '<=', $endDate)->where('is_kp', 0)->get();
 
         $spreadsheet = new Spreadsheet();
 
@@ -665,7 +665,7 @@ class AdminExpenceController extends Controller
             $dimondsQuery->where('weight', '<=', $maxWeight);
         }
 
-        $dimonds = $partyId ? $dimondsQuery->get() : [];
+        $dimonds = $partyId ? $dimondsQuery->where('is_kp', 0)->get() : [];
 
         return view('admin.reports.party_filter', compact('partyLists', 'dimonds'));
     }
@@ -684,7 +684,7 @@ class AdminExpenceController extends Controller
 
         if ($partyId && $partyId !== 'All') {
             $processesQuery->whereHas('dimonds', function ($query) use ($partyId) {
-                $query->where('parties_id', $partyId);
+                $query->where('parties_id', $partyId)->where('is_kp', 0);
             });
         }
 
@@ -1151,7 +1151,7 @@ class AdminExpenceController extends Controller
         $data = [];
 
         if (isset($startDate) && isset($endDate)) {
-            $data = Dimond::whereDate('created_at', '>=', $startDate)->whereDate('created_at', '<=', $endDate)->get();
+            $data = Dimond::whereDate('created_at', '>=', $startDate)->whereDate('created_at', '<=', $endDate)->where('is_kp', 0)->get();
         }
         return view('admin.dimond.dimondprintlist', compact('data'));
     }

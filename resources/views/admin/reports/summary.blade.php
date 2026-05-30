@@ -95,7 +95,7 @@ use App\Models\Dimond;
                             <tbody>
                                 @foreach ($partyes as $partyList)
                                 <?php
-                                $allDimonds = Dimond::where('parties_id', $partyList->id)->where('status', '!=', 'Delivered')->get();
+                                $allDimonds = Dimond::where('parties_id', $partyList->id)->where('status', '!=', 'Delivered')->where('is_kp', 0)->get();
                                 ?>
                                 @foreach ($allDimonds as $allDimond)
                                 <tr>
@@ -130,12 +130,12 @@ use App\Models\Dimond;
                             <tbody>
                                 @foreach ($partyes as $partyList)
                                 <?php
-                                $totalDimond = Dimond::where('parties_id', $partyList->id)->count();
-                                $outterDimond = Dimond::where(['parties_id' => $partyList->id, 'status' => 'OutterProcessing'])->count();
-                                $pendingDimond = Dimond::where(['parties_id' => $partyList->id, 'status' => 'Pending'])->count();
-                                $processingDimond = Dimond::where('parties_id', $partyList->id)->where('status', 'Processing')->count();
-                                $completedDimond = Dimond::where(['parties_id' => $partyList->id, 'status' => 'Completed'])->count();
-                                $deliveredDimond = Dimond::where(['parties_id' => $partyList->id, 'status' => 'Delivered'])->count();
+                                $totalDimond = Dimond::where('parties_id', $partyList->id)->where('is_kp', 0)->count();
+                                $outterDimond = Dimond::where(['parties_id' => $partyList->id, 'status' => 'OutterProcessing'])->where('is_kp', 0)->count();
+                                $pendingDimond = Dimond::where(['parties_id' => $partyList->id, 'status' => 'Pending'])->where('is_kp', 0)->count();
+                                $processingDimond = Dimond::where('parties_id', $partyList->id)->where('status', 'Processing')->where('is_kp', 0)->count();
+                                $completedDimond = Dimond::where(['parties_id' => $partyList->id, 'status' => 'Completed'])->where('is_kp', 0)->count();
+                                $deliveredDimond = Dimond::where(['parties_id' => $partyList->id, 'status' => 'Delivered'])->where('is_kp', 0)->count();
                                 ?>
                                 <tr>
                                     <td>{{ $partyList->fname }}&nbsp;{{ $partyList->lname }}</td>
