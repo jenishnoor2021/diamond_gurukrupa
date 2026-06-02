@@ -59,6 +59,7 @@ class AdminDimondController extends Controller
                 // show diamonds that have an entry in the repairs table
                 $query->whereIn('id', function ($subQuery) {
                     $subQuery->select('dimonds_id')
+                        ->where('status', '!=', 'Delivered')
                         ->from('repairs');
                 });
             } else {
@@ -86,7 +87,11 @@ class AdminDimondController extends Controller
                 ->whereMonth('delevery_date', $request->delivery_month);
         }
 
-        $dimonds = $query->where('status', '!=', 'OutterProcessing')->orderBy('id', 'DESC')->get();
+        if (!in_array($request->designation, ['discus', 'HPHT']) && $request->status != 'OutterProcessing') {
+            $query->where('status', '!=', 'OutterProcessing');
+        }
+
+        $dimonds = $query->orderBy('id', 'DESC')->get();
         return view('admin.dimond.index', compact('dimonds'));
     }
 

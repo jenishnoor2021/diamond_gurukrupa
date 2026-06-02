@@ -44,22 +44,39 @@ class AdminProcessController extends Controller
     public function store(Request $request)
     {
         $dimonds = Dimond::where('id', $request->dimonds_id)->first();
-        $outerDesignation = Designation::where('category', 'Outter')->pluck('name')->toArray();
-        if (in_array($request->designation, $outerDesignation)) {
-            $dimonds->update(['status' => 'OutterProcessing']);
-        } else {
-            $dimonds->update(['status' => 'Processing']);
+
+        if (!$dimonds) {
+            return redirect()->back()->with('error', 'Diamond not found.');
         }
-        Process::create($request->all());
 
+        // Lock and check if diamond already has an open (unresolved) issue
+        $lastProcess = Process::where('dimonds_id', $dimonds->id)
+            ->orderBy('id', 'desc')
+            ->lockForUpdate()
+            ->first();
 
-        // Daily::create([
-        //     'dimonds_id' => $dimonds->id,
-        //     'barcode' => $dimonds->barcode_number,
-        //     'stage' => 'issue',
-        //     'status' => 1,
-        // ]);
-        return redirect('admin/dimond/show/' . $request->dimonds_barcode)->with('success', "Save Record Successfully");
+        // Prevent duplicate issue if last process is still open (not returned)
+        if ($lastProcess && (empty($lastProcess->return_weight) || empty($lastProcess->return_date))) {
+            return redirect()->back()->with('error', 'This diamond is already issued and has not been returned yet.');
+        }
+
+        DB::beginTransaction();
+        try {
+            $outerDesignation = Designation::where('category', 'Outter')->pluck('name')->toArray();
+            if (in_array($request->designation, $outerDesignation)) {
+                $dimonds->update(['status' => 'OutterProcessing']);
+            } else {
+                $dimonds->update(['status' => 'Processing']);
+            }
+
+            Process::create($request->all());
+
+            DB::commit();
+            return redirect('admin/dimond/show/' . $request->dimonds_barcode)->with('success', "Save Record Successfully");
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Error creating process: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -481,10 +498,22 @@ class AdminProcessController extends Controller
         try {
             // Get outer designations to check category
             $outerDesignation = Designation::where('category', 'Outter')->pluck('name')->toArray();
+            // Deduplicate incoming diamond IDs to avoid duplicates in same request
+            $diamondIds = isset($request->diamonds) ? array_values(array_unique($request->diamonds)) : [];
+            $skipped = [];
 
-            foreach ($request->diamonds as $diamondId) {
+            foreach ($diamondIds as $diamondId) {
                 $issueWeight = $request->issue_weights[$diamondId] ?? null;
                 $barcode = $request->barcode_number[$diamondId] ?? null;
+
+                // Lock the last process row for this diamond to prevent concurrent duplicate issuance
+                $lastProcess = Process::where('dimonds_id', $diamondId)->orderBy('id', 'desc')->lockForUpdate()->first();
+
+                // If there is an outstanding (not returned) issue, skip creating another
+                if ($lastProcess && (empty($lastProcess->return_weight) || empty($lastProcess->return_date))) {
+                    $skipped[] = $barcode ?? $diamondId;
+                    continue;
+                }
 
                 // Create new process entry
                 Process::create([
@@ -494,9 +523,6 @@ class AdminProcessController extends Controller
                     'worker_name' => $request->worker_name,
                     'issue_date' => $request->issue_date,
                     'issue_weight' => $issueWeight,
-                    // 'return_date' => null,
-                    // 'return_weight' => null,
-                    // 'status' => 'ISSUED',
                 ]);
 
                 // Update diamond status according to category
@@ -508,6 +534,12 @@ class AdminProcessController extends Controller
             }
 
             DB::commit();
+
+            if (count($skipped) > 0) {
+                $message = 'Some diamonds were skipped because they are already issued: ' . implode(', ', $skipped);
+                return redirect()->back()->with('warning', $message);
+            }
+
             return redirect()->back()->with('success', 'Diamonds issued successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
