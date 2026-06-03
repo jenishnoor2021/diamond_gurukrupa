@@ -572,11 +572,6 @@ class AdminProcessController extends Controller
             return response()->json(['status' => 'error', 'message' => 'This diamond is not issued.']);
         }
 
-        // if issued in grading
-        if (strtoupper($lastProcess->designation) === 'GRADING') {
-            return response()->json(['status' => 'error', 'message' => 'This diamond is issued in grading process.']);
-        }
-
         // prepare data for return table
         $data = [
             'id' => $diamond->id,
@@ -595,8 +590,6 @@ class AdminProcessController extends Controller
             'return_dates' => 'required|array',
             'return_weights' => 'required|array',
         ]);
-
-        // dd($request->all());
 
         DB::beginTransaction();
         try {
@@ -645,7 +638,7 @@ class AdminProcessController extends Controller
                 if ($WorkerRange) {
                     $getkey = $WorkerRange->key;
                     $workerrate = WorkerRate::where('key', $getkey)
-                        ->where('workers_id', $getWorker->id)
+                        ->where('workers_id', optional($getWorker)->id)
                         ->first();
 
                     if ($workerrate) {
@@ -672,7 +665,7 @@ class AdminProcessController extends Controller
                     $getFirstProcess = Process::where('dimonds_id', $process->dimonds_id)
                         ->where('designation', $process->designation)
                         ->first();
-                    $weight = $getFirstProcess->issue_weight;
+                    $weight = $getFirstProcess ? $getFirstProcess->issue_weight : $weight;
                 }
 
                 if ($rate_cut == 1) {
@@ -691,17 +684,75 @@ class AdminProcessController extends Controller
                     ])->where('return_weight', '!=', '')->first();
 
                     if ($countprocess == 0) {
-                        $price = $weight * $get_rate;
+                        $price = $get_rate;
                     } else {
                         if ($firstProcess && $firstProcess->id == $process->id) {
-                            $price = $weight * $get_rate;
+                            $price = $get_rate;
                         } else {
                             if (!empty($previousdata) && $previousdata->price == 0 && $previousdata->ratecut == 1) {
-                                $price = $i_weight * $get_rate;
+                                $price = $get_rate;
                             } else {
                                 $price = 0;
                             }
                         }
+                    }
+                }
+
+                if ($process->designation == 'Grading' && isset($r_weight)) {
+                    $get_party_rate = 0;
+                    $dimond_amount = 0;
+
+                    if ($dimonds->shape == 'Round') {
+                        $partyRange = Partyrange::where('shape', 'Round')
+                            ->where('min_value', '<', $dimonds->weight)
+                            ->where('max_value', '>=', $dimonds->weight)
+                            ->first();
+
+                        if ($partyRange) {
+                            $getkey = $partyRange->key;
+                            $partyrate = PartyRate::where('key', $getkey)
+                                ->where('parties_id', $dimonds->parties_id)
+                                ->first();
+
+                            if ($partyrate) {
+                                $get_party_rate = $partyrate->value;
+                            }
+                            if ($get_party_rate == 0) {
+                                $get_party_rate = $partyRange->value;
+                            }
+                        }
+                    }
+
+                    if ($dimonds->shape != 'Round') {
+                        $partyRange = Partyrange::where('shape', 'Other')
+                            ->where('min_value', '<', $dimonds->weight)
+                            ->where('max_value', '>=', $dimonds->weight)
+                            ->first();
+
+                        if ($partyRange) {
+                            $getkey = $partyRange->key;
+                            $partyrate = PartyRate::where('key', $getkey)
+                                ->where('parties_id', $dimonds->parties_id)
+                                ->first();
+
+                            if ($partyrate) {
+                                $get_party_rate = $partyrate->value;
+                            }
+                            if ($get_party_rate == 0) {
+                                $get_party_rate = $partyRange->value;
+                            }
+                        }
+                    }
+
+                    if (isset($get_party_rate)) {
+                        $dimond_amount = ($dimonds->weight) * ($get_party_rate);
+                    }
+
+                    $dimonds->update(['status' => 'Completed', 'amount' => $dimond_amount]);
+
+                    $daily = Daily::where('dimonds_id', $process->dimonds_id)->first();
+                    if ($daily) {
+                        $daily->delete();
                     }
                 }
 
